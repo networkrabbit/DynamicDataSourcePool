@@ -36,11 +36,8 @@ public class DataInterceptor implements HandlerInterceptor {
 
         // 判断该数据源是否已在map中存在,当不存在时添加新数据源,否则直接切换
         if (!DynamicDataSource.getInstance().getDataSourceMap().containsKey(key)) {
-
             try {
-
                 createDataSource(jdbcUrl, username, password);
-
             } catch (SQLException e) {
                 logger.error(e.getMessage());
                 sendJson(response,e.getMessage());
@@ -50,14 +47,12 @@ public class DataInterceptor implements HandlerInterceptor {
         // 切换数据源到新增数据源
         DataSourceContextHolder.setKey(key);
         logger.info("切换数据源 md5 key:" + key +" jdbcUrl:"+jdbcUrl);
-
         return true;
     }
 
     private static void createDataSource(String url, String username, String password) throws SQLException {
         // 根据配置创建 DruidDataSource 对象
         DruidDataSource dynamicDataSource = new DruidDataSource();
-
         dynamicDataSource.setDriverClassName(JdbcUtils.getDriverClassName(url));
         dynamicDataSource.setUrl(url);
         dynamicDataSource.setUsername(username);

@@ -25,10 +25,8 @@ public class PoolServiceImpl implements PoolService {
     PoolMapper poolMapper;
 
 
-    //todo 添加事务
-
     @Override
-    @Transactional
+    @Transactional(rollbackFor=RuntimeException.class)
     public Map<String, Map<String, Map<String, Object>>> runSql(String sqlString) {
 
         //正则替换，去除单行和多行注释，只保留需要执行的sql语句
@@ -75,6 +73,7 @@ public class PoolServiceImpl implements PoolService {
                     rowMap.put("0", null);
                     sqlMap.put("rows", rowMap);
                 } else {
+                    // 不支持的类型，单独处理返回的信息
                     Map<String, Object> errorMap = new HashMap<>(16);
                     errorMap.put("sql", sql);
                     errorMap.put("msg", "不支持的sql类型，现仅支持 select、insert、delete");

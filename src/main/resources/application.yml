@@ -22,9 +22,10 @@ spring:
 
       # 连接池配置
       initial-size: 5
-      max-active: 20
-      min-idle: 5
+      max-active: 100
+      min-idle: 1
       max-wait: 10
+      use-unfair-lock: false
       filters: stat,wall,config
       filter:
         stat:
@@ -40,6 +41,7 @@ spring:
         reset-enable: false
         login-username: admin
         login-password: admin
+
 #      # 指明是否在从池中取出连接前进行检验,如果检验失败, 则从池中去除连接并尝试取出另一个，
 #      #注意: 设置为true后如果要生效,validationQuery参数必须设置为非空字符串
 #      test-on-borrow: false
