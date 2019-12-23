@@ -19,7 +19,7 @@ public interface PoolService {
      * @return 返回查询的结果集 返回样例 {"0":{"col1":{"0":"val1","1":"val2"},"clo2":{"0":"val1","1":"val2"}}}
      * 最外层的 "0" 含义为第几个执行的sql
      */
-    Map<String, Map<String, Map<String, String>>> doSelect(String sqlString);
+    Map<String, Map<String, Map<String, Object>>> runSql(String sqlString);
 
 
     /**

@@ -49,7 +49,7 @@ public class PoolController {
 
             // 转为UTF-8编码
             String sqlString = result.toString(StandardCharsets.UTF_8.name());
-            return poolService.doSelect(sqlString);
+            return poolService.runSql(sqlString);
         } catch (Exception e) {
             // todo 修改 e.printStackTrace();为日志形式
             System.out.println(e.getMessage());

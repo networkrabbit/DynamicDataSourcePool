@@ -1,8 +1,6 @@
 package com.datatom.dspool.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,9 +15,28 @@ import java.util.Map;
 public interface PoolMapper {
     /**
      * running sql and get return
+     *
      * @param sql 需要查询的sql语句
      * @return 返回查询的结果集
      */
     @Select("${sql}")
-    List<Map<String,Object>> select( String sql);
+    List<Map<String, Object>> select(String sql);
+
+    /**
+     * insert 方法
+     * @param sql 要执行的插入数据语句
+     * @return 插入的行数
+     */
+    @Insert("${sql}")
+    int insert(String sql);
+
+
+    /**
+     * delete 方法
+     * @param sql 要执行的删除数据语句
+     * @return 是否成功
+     */
+    @Delete("${sql}")
+    boolean delete(String sql);
 }
+

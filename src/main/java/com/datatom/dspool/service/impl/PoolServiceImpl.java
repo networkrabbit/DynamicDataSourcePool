@@ -4,6 +4,7 @@ import com.datatom.dspool.mapper.PoolMapper;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -23,8 +24,12 @@ public class PoolServiceImpl implements PoolService {
     @Resource
     PoolMapper poolMapper;
 
+
+    //todo 添加事务
+
     @Override
-    public Map<String, Map<String, Map<String, String>>> doSelect(String sqlString) {
+    @Transactional
+    public Map<String, Map<String, Map<String, Object>>> runSql(String sqlString) {
 
         //正则替换，去除单行和多行注释，只保留需要执行的sql语句
         sqlString = sqlString.replaceAll("(--.*)|((/\\*)+?[\\w\\W]+?(\\*/)+)", "");
@@ -32,29 +37,50 @@ public class PoolServiceImpl implements PoolService {
         String[] sqlArray = sqlString.split(";");
         // 计数，存储本次执行了多少个sql
         int sqlNum = 0;
-        Map<String, Map<String, Map<String, String>>> resultMap = new HashMap<>(16);
+        Map<String, Map<String, Map<String, Object>>> resultMap = new HashMap<>(16);
         for (String sql : sqlArray) {
             // 检查分割出的sql是否为空，若为空不执行查询操作
-            if (sql.replaceAll(" ", "").length() != 0) {
-                Map<String, Map<String, String>> sqlMap = new HashMap<>(16);
-                // 执行sql查询语句
-                List<Map<String, Object>> resultList = poolMapper.select( sql);
+            if (sql.trim().length() != 0) {
+                Map<String, Map<String, Object>> sqlMap = new HashMap<>(16);
+                System.out.println(sql);
+                String type = sql.trim().toLowerCase().split(" ")[0];
+                // 判断sql类型执行不同的方法
+                if ("select".equals(type)) {
+                    // 执行sql查询语句
+                    List<Map<String, Object>> resultList = poolMapper.select(sql);
 
-                for (int i = 0; i < resultList.size(); i++) {
-                    // 遍历数据重构结构以对齐 python 中pandas DataFrame的格式
-                    for (Map.Entry<String, Object> entry : resultList.get(i).entrySet()) {
-                        // 判断key是否已存在，若不存在则新建map对象并赋值，否则反之
-                        if (sqlMap.containsKey(entry.getKey())) {
-                            Map<String, String> map = sqlMap.get(entry.getKey());
-                            map.put(String.valueOf(i), String.valueOf(entry.getValue()));
-                            sqlMap.put(entry.getKey(), map);
-                        } else {
-                            Map<String, String> map = new HashMap<>(16);
-                            map.put(String.valueOf(i), String.valueOf(entry.getValue()));
-                            sqlMap.put(entry.getKey(), map);
+                    for (int i = 0; i < resultList.size(); i++) {
+                        // 遍历数据重构结构以对齐 python 中pandas DataFrame的格式
+                        for (Map.Entry<String, Object> entry : resultList.get(i).entrySet()) {
+                            // 判断key是否已存在，若不存在则新建map对象并赋值，否则反之
+                            if (sqlMap.containsKey(entry.getKey())) {
+                                Map<String, Object> map = sqlMap.get(entry.getKey());
+                                map.put(String.valueOf(i), entry.getValue());
+                                sqlMap.put(entry.getKey(), map);
+                            } else {
+                                Map<String, Object> map = new HashMap<>(16);
+                                map.put(String.valueOf(i), entry.getValue());
+                                sqlMap.put(entry.getKey(), map);
+                            }
                         }
                     }
+                } else if ("insert".equals(type)) {
+                    int rowNums = poolMapper.insert(sql);
+                    Map<String, Object> rowMap = new HashMap<>(16);
+                    rowMap.put("0", rowNums);
+                    sqlMap.put("rows", rowMap);
+                } else if ("delete".equals(type)) {
+                    boolean success = poolMapper.delete(sql);
+                    Map<String, Object> rowMap = new HashMap<>(16);
+                    rowMap.put("0", null);
+                    sqlMap.put("rows", rowMap);
+                } else {
+                    Map<String, Object> errorMap = new HashMap<>(16);
+                    errorMap.put("sql", sql);
+                    errorMap.put("msg", "不支持的sql类型，现仅支持 select、insert、delete");
+                    sqlMap.put("info", errorMap);
                 }
+
                 // 将该sql赋值回结果集中
                 resultMap.put(String.valueOf(sqlNum), sqlMap);
                 sqlNum += 1;
@@ -85,7 +111,7 @@ public class PoolServiceImpl implements PoolService {
 
         for (String matchStr : matchStrList) {
             String sql = String.format("select %s as result", matchStr);
-            List<Map<String,Object>> resultList = poolMapper.select(sql);
+            List<Map<String, Object>> resultList = poolMapper.select(sql);
             resultList.get(0).get("result");
         }
     }
