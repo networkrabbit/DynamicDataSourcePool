@@ -7,6 +7,16 @@ server:
   port: 8080
   #context-path: /springboot
 
+# 日志配置
+logging:
+  file:
+    path: /var/danastudio/log
+    max-history: 15
+
+# rsa 配置
+rsa:
+  enabled: true
+  public-key: sad
 
 
 datasource-list: druid

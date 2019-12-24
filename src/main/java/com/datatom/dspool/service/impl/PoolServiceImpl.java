@@ -3,6 +3,8 @@ package com.datatom.dspool.service.impl;
 import com.datatom.dspool.mapper.PoolMapper;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,13 @@ import java.util.regex.Pattern;
  */
 @Service
 public class PoolServiceImpl implements PoolService {
+    private static Logger logger = LoggerFactory.getLogger(PoolServiceImpl.class);
     @Resource
     PoolMapper poolMapper;
 
 
     @Override
-    @Transactional(rollbackFor=RuntimeException.class)
+    @Transactional(rollbackFor = RuntimeException.class)
     public Map<String, Map<String, Map<String, Object>>> runSql(String sqlString) {
 
         //正则替换，去除单行和多行注释，只保留需要执行的sql语句
@@ -40,8 +43,9 @@ public class PoolServiceImpl implements PoolService {
             // 检查分割出的sql是否为空，若为空不执行查询操作
             if (sql.trim().length() != 0) {
                 Map<String, Map<String, Object>> sqlMap = new HashMap<>(16);
-                System.out.println(sql);
                 String type = sql.trim().toLowerCase().split(" ")[0];
+                logger.debug("sql type: " + type + " ,sql:" + sql);
+
                 // 判断sql类型执行不同的方法
                 if ("select".equals(type)) {
                     // 执行sql查询语句
