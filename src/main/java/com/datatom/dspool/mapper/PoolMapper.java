@@ -3,6 +3,7 @@ package com.datatom.dspool.mapper;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,5 +39,15 @@ public interface PoolMapper {
      */
     @Delete("${sql}")
     boolean delete(String sql);
+
+    /**
+     * running sql and get return
+     *
+     * @param sql 需要查询的sql语句
+     * @return 返回查询的结果集
+     */
+    @Select("${sql}")
+    List<LinkedHashMap<String,Object>> selectStr(String sql);
+
 }
 

@@ -27,6 +27,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -50,7 +51,8 @@ public class DataInterceptor implements HandlerInterceptor {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         if (StringUtils.isEmpty(jdbcUrl)) {
-            sendJson(response, "jdbcUrl 需要设置");
+            // 返回错误信息给请求端解析
+            sendJson(response, Common.ERROR, "参数中需要有 jdbcUrl");
             return false;
         }
         // 判断是否开启rsa 加解密验证
@@ -58,7 +60,8 @@ public class DataInterceptor implements HandlerInterceptor {
             try {
                 password = RsaUtil.publicKeyDecrypt(RsaUtil.str2PublicKey(rsaPublicKey), password);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
-                sendJson(response, e.getMessage());
+                // 返回错误信息给请求端解析
+                sendJson(response, Common.ERROR, "私钥加密，公钥解密  解密失败\r\n" + e.getMessage());
                 logger.error("私钥加密，公钥解密  解密失败", e);
                 return false;
             }
@@ -71,8 +74,8 @@ public class DataInterceptor implements HandlerInterceptor {
             try {
                 createDataSource(jdbcUrl, username, password);
             } catch (SQLException e) {
-                logger.error("SQLException", e);
-                sendJson(response, e.getMessage());
+                sendJson(response, Common.ERROR, "添加数据源失败\r\n" + e.getMessage());
+                logger.error("添加的jdbc：" + jdbcUrl + "添加数据源失败", e);
                 return false;
             }
         }
@@ -110,14 +113,18 @@ public class DataInterceptor implements HandlerInterceptor {
     /**
      * 回写json方法
      *
-     * @param response
-     * @param obj
+     * @param response HttpServletResponse
+     * @param code     状态码
+     * @param msg      返回的信息
      */
-    private static void sendJson(HttpServletResponse response, Object obj) {
+    private static void sendJson(HttpServletResponse response, int code, String msg) {
         PrintWriter out;
         try {
             out = response.getWriter();
-            JSONObject json = (JSONObject) JSON.toJSON(obj);
+            Map<String, Object> map = new HashMap<>(16);
+            map.put("code", code);
+            map.put("msg", msg);
+            JSONObject json = (JSONObject) JSON.toJSON(map);
             out.append(json.toString());
         } catch (IOException e) {
             logger.error("获取response输出异常", e);

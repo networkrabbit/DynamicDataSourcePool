@@ -1,14 +1,10 @@
 package com.datatom.dspool.controller;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.datatom.dspool.datasource.DataSourceContextHolder;
-import com.datatom.dspool.datasource.DynamicDataSource;
-import com.datatom.dspool.interceptor.DataInterceptor;
+import com.alibaba.druid.util.JdbcUtils;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +15,11 @@ import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author xiangluyao
@@ -28,13 +29,16 @@ import java.nio.charset.StandardCharsets;
 @Controller
 @RequestMapping("/pool")
 public class PoolController {
+    private static Logger logger = LoggerFactory.getLogger(PoolController.class);
     @Resource
     PoolService poolService;
 
 
-    @RequestMapping("/select")
+    @RequestMapping("/executeSql")
     @ResponseBody
-    public Object getRequest(@RequestParam("file") MultipartFile file, String ip, String port, String schema, String catalog) {
+    public Object getRequest(@RequestParam("file") MultipartFile file) {
+
+        Map<String, Object> resultMap = new HashMap<>(16);
         try {
             // 读文件流获取上传的sql
             InputStream fis = file.getInputStream();
@@ -49,11 +53,55 @@ public class PoolController {
 
             // 转为UTF-8编码
             String sqlString = result.toString(StandardCharsets.UTF_8.name());
-            return poolService.runSql(sqlString);
+            resultMap.put("code", Common.SUCCESS);
+            resultMap.put("data", poolService.runSqlAsPandasReturn(sqlString));
+            resultMap.put("msg", "successful");
+            return resultMap;
         } catch (Exception e) {
-            // todo 修改 e.printStackTrace();为日志形式
-            System.out.println(e.getMessage());
-            return e.toString();
+            resultMap.put("code", Common.ERROR);
+            resultMap.put("msg", "sql 执行异常\r\n," + e.toString());
+
+            logger.error("sql执行异常", e);
+            return resultMap;
+        }
+    }
+
+    @RequestMapping("/oracle/executeSql")
+    @ResponseBody
+    public Object getRequest(String sql) {
+        Map<String, Object> resultMap = new HashMap<>(16);
+        try {
+            // 转为UTF-8编码
+            resultMap.put("code", Common.SUCCESS);
+            resultMap.put("data", poolService.runSqlAsXormReturn(sql));
+            resultMap.put("msg", "successful");
+            return resultMap;
+        } catch (Exception e) {
+            resultMap.put("code", Common.ERROR);
+            resultMap.put("msg", "sql 执行异常\r\n," + e.toString());
+
+            logger.error("sql执行异常", e);
+            return resultMap;
+        }
+    }
+
+    @RequestMapping("/checkConnect")
+    @ResponseBody
+    public static Boolean checkConnect(String jdbcUrl, String username, String password) {
+        try {
+            // 加载驱动类
+            Class.forName(JdbcUtils.getDriverClassName(jdbcUrl));
+            Connection con = DriverManager
+                    .getConnection(jdbcUrl, username, password);
+            if (con != null) {
+                con.close();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            logger.error("检查数据源是否能可用时异常", e);
+            return false;
         }
     }
 
