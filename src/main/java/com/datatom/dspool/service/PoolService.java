@@ -16,10 +16,18 @@ public interface PoolService {
      * running sql and get return
      *
      * @param sqlString 要执行的sql语句。多个sql时使用 ";"分隔
-     * @return 返回查询的结果集 返回样例 {"0":{"col1":{"0":"val1","1":"val2"},"clo2":{"0":"val1","1":"val2"}}}
+     * @return 返回查询的结果集,格式和 pandas.read_sql() 后 to_json() 的格式对齐 返回样例 {"0":{"col1":{"0":"val1","1":"val2"},"clo2":{"0":"val1","1":"val2"}}}
      * 最外层的 "0" 含义为第几个执行的sql
      */
-    Map<String, Map<String, Map<String, Object>>> runSql(String sqlString);
+    Map<String, Map<String, Map<String, Object>>> runSqlAsPandasReturn(String sqlString);
+
+    /**
+     * 执行sql并按特殊格式返回
+     *
+     * @param sqlString
+     * @return 返回List 数组
+     */
+    List<String> runSqlAsXormReturn(String sqlString);
 
 
     /**

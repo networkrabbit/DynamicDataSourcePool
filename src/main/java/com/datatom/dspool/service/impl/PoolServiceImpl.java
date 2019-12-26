@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +27,7 @@ public class PoolServiceImpl implements PoolService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public Map<String, Map<String, Map<String, Object>>> runSql(String sqlString) {
+    public Map<String, Map<String, Map<String, Object>>> runSqlAsPandasReturn(String sqlString) {
 
         //正则替换，去除单行和多行注释，只保留需要执行的sql语句
         sqlString = sqlString.replaceAll("(--.*)|((/\\*)+?[\\w\\W]+?(\\*/)+)", "");
@@ -92,6 +89,28 @@ public class PoolServiceImpl implements PoolService {
 
         return resultMap;
     }
+
+    @Override
+    public List<String> runSqlAsXormReturn(String sqlString) {
+        // 为保持查询字段有序返回，使用 LinkedHashMap
+        List<LinkedHashMap<String,Object>> resultList = poolMapper.selectStr(sqlString);
+
+        List<String> returnList = new ArrayList<>();
+        // 为将数据拼接为列表返回，原始使用时仅查一条数据，所以不存在多行数据的问题
+        for (LinkedHashMap<String,Object> map:resultList){
+            for(Map.Entry<String,Object> entry:map.entrySet()){
+                // 对空值进行特殊处理，不让其转为 "null"
+                if (entry.getValue()==null){
+                    returnList.add("");
+                }else {
+                    returnList.add(String.valueOf(entry.getValue()));
+                }
+            }
+        }
+        return returnList;
+    }
+
+
 
     @Override
     public void runSpecialUDF(String str, Pattern pattern) {

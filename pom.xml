@@ -65,6 +65,15 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--oracle 驱动依赖jar 包-->
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.3</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/lib/ojdbc6-11.2.0.3.jar</systemPath>
+        </dependency>
+
         <!-- presto依赖-->
         <!-- https://mvnrepository.com/artifact/com.facebook.presto/presto-jdbc -->
         <dependency>
@@ -88,6 +97,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
         </plugins>
 
