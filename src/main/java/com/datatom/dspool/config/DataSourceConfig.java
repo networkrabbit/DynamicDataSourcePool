@@ -128,6 +128,11 @@ public class DataSourceConfig {
             @Qualifier("dynamicDataSource") DataSource dynamicDataSource)
             throws Exception {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+        // 设置字段为空时依旧返回
+        configuration.setCallSettersOnNulls(true);
+        bean.setConfiguration(configuration);
+
         bean.setDataSource(dynamicDataSource);
         bean.setMapperLocations(new PathMatchingResourcePatternResolver()
                 .getResources( getMapperLocation() ));

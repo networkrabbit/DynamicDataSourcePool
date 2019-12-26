@@ -19,6 +19,7 @@ rsa:
   public-key: sad
 
 
+
 datasource-list: druid
 # 数据库配置
 spring:
@@ -26,7 +27,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.facebook.presto.jdbc.PrestoDriver
     druid:
-      url:
+      url: jdbc:presto://192.168.90.46:9999/hive/odsdb?user=hive
       username:
       password:
 
@@ -70,5 +71,9 @@ spring:
 
 
 ##########################  mybatis   ##########################
+
 mybatis:
+  configuration:
+    return-instance-for-empty-row: true
+    callSettersOnNulls: true
   mapper-locations: classpath:mapper/*.xml

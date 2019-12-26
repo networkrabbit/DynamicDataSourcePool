@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.datatom.dspool.datasource.DataSourceContextHolder;
 import com.datatom.dspool.datasource.DynamicDataSource;
+import com.datatom.dspool.model.ReturnCodeType;
 import com.datatom.dspool.utils.Common;
 import com.datatom.dspool.utils.Md5;
 import com.datatom.dspool.utils.RsaUtil;
@@ -45,11 +46,11 @@ public class DataInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response, Object o) {
-        String jdbcUrl = request.getHeader("jdbcUrl");
-        String username = request.getHeader("username");
-        String password = request.getHeader("password");
-        if (StringUtils.isEmpty(jdbcUrl)){
-            sendJson(response,"jdbcUrl 需要设置");
+        String jdbcUrl = request.getParameter("jdbcUrl");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        if (StringUtils.isEmpty(jdbcUrl)) {
+            sendJson(response, "jdbcUrl 需要设置");
             return false;
         }
         // 判断是否开启rsa 加解密验证
@@ -108,6 +109,7 @@ public class DataInterceptor implements HandlerInterceptor {
 
     /**
      * 回写json方法
+     *
      * @param response
      * @param obj
      */
