@@ -1,5 +1,6 @@
 package com.datatom.dspool.controller;
 
+import com.alibaba.druid.stat.DruidStatManagerFacade;
 import com.alibaba.druid.util.JdbcUtils;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
@@ -87,7 +88,8 @@ public class PoolController {
 
     @RequestMapping("/checkConnect")
     @ResponseBody
-    public static Boolean checkConnect(String jdbcUrl, String username, String password) {
+    public static Object checkConnect(String jdbcUrl, String username, String password) {
+        Map<String, Object> resultMap = new HashMap<>(16);
         try {
             // 加载驱动类
             Class.forName(JdbcUtils.getDriverClassName(jdbcUrl));
@@ -95,14 +97,27 @@ public class PoolController {
                     .getConnection(jdbcUrl, username, password);
             if (con != null) {
                 con.close();
-                return true;
+                resultMap.put("code", Common.SUCCESS);
+                resultMap.put("data", true);
+                resultMap.put("msg", "连接成功");
             } else {
-                return false;
+                resultMap.put("code", Common.ERROR);
+                resultMap.put("data", false);
+                resultMap.put("msg", "未能创建连接，请检测连接信息");
             }
+
+            return resultMap;
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("检查数据源是否能可用时异常", e);
-            return false;
+            resultMap.put("code", Common.ERROR);
+            resultMap.put("data", false);
+            resultMap.put("msg", "创建连接时报错，"+e.getMessage());
+            return resultMap;
         }
     }
 
+    @RequestMapping("/d")
+    public Object geta() {
+        return DruidStatManagerFacade.getInstance().getDataSourceStatDataList();
+    }
 }

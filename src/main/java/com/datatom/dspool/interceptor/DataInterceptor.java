@@ -7,7 +7,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.datatom.dspool.datasource.DataSourceContextHolder;
 import com.datatom.dspool.datasource.DynamicDataSource;
-import com.datatom.dspool.model.ReturnCodeType;
 import com.datatom.dspool.utils.Common;
 import com.datatom.dspool.utils.Md5;
 import com.datatom.dspool.utils.RsaUtil;
@@ -100,7 +99,14 @@ public class DataInterceptor implements HandlerInterceptor {
         dynamicDataSource.setUrl(url);
         dynamicDataSource.setUsername(username);
         dynamicDataSource.setPassword(password);
-
+        // 设置基础配置项
+        dynamicDataSource.setMaxActive(14);
+        dynamicDataSource.setMinIdle(1);
+        // 设置连接检测是否可用的方式
+        dynamicDataSource.setValidationQuery("select 1");
+        dynamicDataSource.setTestWhileIdle(true);
+        dynamicDataSource.setTestOnBorrow(false);
+        dynamicDataSource.setTestOnReturn(false);
         // 将新建的数据源加载至动态数据源对象中
         String thisKey = Md5.md5(url + username + password, 16);
         Map<Object, Object> dataSourceMap = DynamicDataSource.getInstance().getDataSourceMap();
