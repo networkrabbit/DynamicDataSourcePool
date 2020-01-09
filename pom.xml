@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.datatom</groupId>
-    <artifactId>dspool</artifactId>
+    <artifactId>danastudio_dspool</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>dspool</name>
-    <description>datasource pool for ds</description>
+    <name>danastudio_dspool</name>
+    <description>datasource pool for DS</description>
 
     <properties>
         <java.version>1.8</java.version>

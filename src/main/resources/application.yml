@@ -4,14 +4,14 @@ server:
     uri-encoding: UTF-8
     max-threads: 1000
     min-spare-threads: 30
-  port: 8080
+  port: 21613
   #context-path: /springboot
 
 # 日志配置
 logging:
   file:
-    path: /var/danastudio/log
     max-history: 15
+    name: /var/danastudio/log/datasource_pool/datasource_pool.log
 
 # rsa 配置
 rsa:
@@ -40,14 +40,6 @@ spring:
         stat:
           log-slow-sql: true
           slow-sql-millis: 2000
-      # 检查池中的连接是否仍可用的 SQL 语句,druid会连接到数据库执行该SQL
-      validation-query: select 1
-      # 当程序请求连接，池在分配连接时，是否先检查该连接是否有效。(高效)
-      test-while-idle: true
-      # 申请连接时,进行连接有效性检查（低效，影响性能）
-      test-on-borrow: false
-      # 返还连接时,进行连接有效性检查（低效，影响性能）
-      test-on-return: false
       # 监控配置
       web-stat-filter:
         enabled: true
@@ -63,5 +55,5 @@ spring:
 mybatis:
   configuration:
     return-instance-for-empty-row: true
-    callSettersOnNulls: true
+    call-setters-on-nulls: true
   mapper-locations: classpath:mapper/*.xml
