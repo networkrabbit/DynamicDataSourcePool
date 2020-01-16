@@ -39,8 +39,8 @@ public class MonitorController {
                 List<Map<String, Object>> list = druidStatManagerFacade.getSqlStatDataList(id);
 
                 monitorModel.setId(id);
-                monitorModel.setUrl(String.valueOf(map.get("URL")));
-                monitorModel.setUsername(String.valueOf(map.get("UserName")));
+                monitorModel.setUrl((String)map.get("URL"));
+                monitorModel.setUsername((String)map.get("UserName"));
                 monitorModel.setNotEmptyWaitCount((Long) map.get("NotEmptyWaitCount"));
                 monitorModel.setNotEmptyWaitMillis((Long) map.get("NotEmptyWaitMillis"));
                 monitorModel.setPoolingCount((Integer) map.get("PoolingCount"));
