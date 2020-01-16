@@ -35,18 +35,22 @@ spring:
       initial-size: 1
       max-active: 10
       min-idle: 1
-      filters: stat,wall,config
+      filters: mergeStat
       filter:
         stat:
           log-slow-sql: true
           slow-sql-millis: 2000
-      # 监控配置
-      web-stat-filter:
-        enabled: true
-        url-pattern: /*
+          enabled: true
+      #      # 监控配置
+#      web-stat-filter:
+#        enabled: true
+#        url-pattern: /*
       stat-view-servlet:
         enabled: true
         url-pattern: /druid/*
+        reset-enable: false
+        login-username: admin
+        login-password: admin
 
 
 

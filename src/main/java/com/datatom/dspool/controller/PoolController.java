@@ -1,6 +1,7 @@
 package com.datatom.dspool.controller;
 
 import com.alibaba.druid.stat.DruidStatManagerFacade;
+import com.alibaba.druid.support.console.DruidStat;
 import com.alibaba.druid.util.JdbcUtils;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
@@ -20,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,7 +62,7 @@ public class PoolController {
             return resultMap;
         } catch (Exception e) {
             resultMap.put("code", Common.ERROR);
-            resultMap.put("msg", "sql 执行异常\r\n," + e.toString());
+            resultMap.put("msg", "sql 执行异常,\r\n" + e.getMessage());
 
             logger.error("sql执行异常", e);
             return resultMap;
@@ -79,9 +81,9 @@ public class PoolController {
             return resultMap;
         } catch (Exception e) {
             resultMap.put("code", Common.ERROR);
-            resultMap.put("msg", "sql 执行异常\r\n," + e.toString());
+            resultMap.put("msg", "sql 执行异常,\r\n" + e.getMessage());
 
-            logger.error("sql执行异常", e);
+            logger.error("sql执行异常" , e);
             return resultMap;
         }
     }
@@ -111,13 +113,8 @@ public class PoolController {
             logger.error("检查数据源是否能可用时异常", e);
             resultMap.put("code", Common.ERROR);
             resultMap.put("data", false);
-            resultMap.put("msg", "创建连接时报错，"+e.getMessage());
+            resultMap.put("msg", "创建连接时报错，" + e.getMessage());
             return resultMap;
         }
-    }
-
-    @RequestMapping("/d")
-    public Object geta() {
-        return DruidStatManagerFacade.getInstance().getDataSourceStatDataList();
     }
 }

@@ -102,11 +102,9 @@ public class DataInterceptor implements HandlerInterceptor {
         // 设置基础配置项
         dynamicDataSource.setMaxActive(14);
         dynamicDataSource.setMinIdle(1);
-//        // 设置连接检测是否可用的方式
-//        dynamicDataSource.setValidationQuery("select 1");
-//        dynamicDataSource.setTestWhileIdle(true);
-//        dynamicDataSource.setTestOnBorrow(false);
-//        dynamicDataSource.setTestOnReturn(false);
+        // 设置sql合并，将一类sql归类
+        dynamicDataSource.setFilters("mergeStat");
+        dynamicDataSource.setTestWhileIdle(false);
         // 将新建的数据源加载至动态数据源对象中
         String thisKey = Md5.md5(url + username + password, 16);
         Map<Object, Object> dataSourceMap = DynamicDataSource.getInstance().getDataSourceMap();
