@@ -21,7 +21,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
         // 配置需要拦截的路径
         interceptorRegistration.addPathPatterns("/pool/**");
         interceptorRegistration.excludePathPatterns("/pool/checkConnect");
-        interceptorRegistration.excludePathPatterns("/pool/d");
 
     }
 }

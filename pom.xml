@@ -65,6 +65,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- presto驱动依赖jar包-->
+        <!-- https://mvnrepository.com/artifact/com.facebook.presto/presto-jdbc -->
+        <dependency>
+            <groupId>com.facebook.presto</groupId>
+            <artifactId>presto-jdbc</artifactId>
+            <version>0.217</version>
+        </dependency>
+
         <!--oracle 驱动依赖jar 包-->
         <dependency>
             <groupId>com.oracle</groupId>
@@ -73,6 +81,23 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/lib/ojdbc6-11.2.0.3.jar</systemPath>
         </dependency>
+
+        <!-- hive驱动依赖jar -->
+        <!-- https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc -->
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-jdbc</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-common -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.7.2</version>
+        </dependency>
+
+
 
         <!-- https://mvnrepository.com/artifact/org.apache.kafka/connect-api -->
         <dependency>
@@ -84,13 +109,7 @@
 
 
 
-        <!-- presto依赖-->
-        <!-- https://mvnrepository.com/artifact/com.facebook.presto/presto-jdbc -->
-        <dependency>
-            <groupId>com.facebook.presto</groupId>
-            <artifactId>presto-jdbc</artifactId>
-            <version>0.217</version>
-        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
         <dependency>

@@ -25,6 +25,7 @@ public interface PoolMapper {
 
     /**
      * insert 方法
+     *
      * @param sql 要执行的插入数据语句
      * @return 插入的行数
      */
@@ -34,6 +35,7 @@ public interface PoolMapper {
 
     /**
      * delete 方法
+     *
      * @param sql 要执行的删除数据语句
      * @return 是否成功
      */
@@ -47,7 +49,16 @@ public interface PoolMapper {
      * @return 返回查询的结果集
      */
     @Select("${sql}")
-    List<LinkedHashMap<String,Object>> selectStr(String sql);
+    List<LinkedHashMap<String, Object>> selectStr(String sql);
+
+    /**
+     * running sql and get return
+     *
+     * @param sql 需要查询的sql语句
+     * @return 返回查询的结果集
+     */
+    @Select("${sql}")
+    List<Map<String, Object>> updateStr(String sql);
 
 }
 

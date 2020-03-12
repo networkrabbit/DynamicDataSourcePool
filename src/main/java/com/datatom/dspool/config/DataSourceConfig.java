@@ -43,10 +43,6 @@ public class DataSourceConfig {
     private String defaultDriver;
 
 
-    //todo 增加连接池相关配置
-
-
-
     /**
      * 定义key，使用该key获取定义的数据源名
      */

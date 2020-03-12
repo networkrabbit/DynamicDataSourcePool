@@ -99,12 +99,19 @@ public class DataInterceptor implements HandlerInterceptor {
         dynamicDataSource.setUrl(url);
         dynamicDataSource.setUsername(username);
         dynamicDataSource.setPassword(password);
-        // 设置基础配置项
+        // 设置基础配置项，设置最大、最小连接数
         dynamicDataSource.setMaxActive(14);
         dynamicDataSource.setMinIdle(1);
         // 设置sql合并，将一类sql归类
         dynamicDataSource.setFilters("mergeStat");
-        dynamicDataSource.setTestWhileIdle(false);
+        dynamicDataSource.setValidationQuery("select 1");
+        dynamicDataSource.setTestWhileIdle(true);
+        // 配置一个连接在池中最小生存时间，单位毫秒
+        dynamicDataSource.setMinEvictableIdleTimeMillis(10 * 60 * 1000);
+        dynamicDataSource.setMaxEvictableIdleTimeMillis(15 * 60 * 1000);
+        // 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        dynamicDataSource.setTimeBetweenEvictionRunsMillis(200);
+//        dynamicDataSource.setTimeout
         // 将新建的数据源加载至动态数据源对象中
         String thisKey = Md5.md5(url + username + password, 16);
         Map<Object, Object> dataSourceMap = DynamicDataSource.getInstance().getDataSourceMap();

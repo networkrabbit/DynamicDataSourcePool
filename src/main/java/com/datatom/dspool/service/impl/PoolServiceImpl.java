@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,27 +91,45 @@ public class PoolServiceImpl implements PoolService {
         return resultMap;
     }
 
+
     @Override
+//    @Transactional(rollbackFor = RuntimeException.class)
+    public List<Map<String, Object>> runSqlAsHiveReturn(String sqlString) {
+//        System.out.println(poolMapper.updateStr(sqlString));
+        return poolMapper.updateStr(sqlString);
+    }
+
+
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public List<String> runSqlAsXormReturn(String sqlString) {
         // 为保持查询字段有序返回，使用 LinkedHashMap
-        List<LinkedHashMap<String,Object>> resultList = poolMapper.selectStr(sqlString);
+        List<LinkedHashMap<String, Object>> resultList = poolMapper.selectStr(sqlString);
 
         List<String> returnList = new ArrayList<>();
         // 为将数据拼接为列表返回，原始使用时仅查一条数据，所以不存在多行数据的问题
-        for (LinkedHashMap<String,Object> map:resultList){
+        for (LinkedHashMap<String, Object> map : resultList) {
             // 注意！！！！！
             // 当单查一个字段，且字段值为null时，会返回一个 键值对都时null的对象
             // 为防止此类返回报错，单独处理
-            if (map==null){
+            if (map == null) {
                 returnList.add("");
-            }else {
+            } else {
                 // 正常业务处理流程
-                for(Map.Entry<String,Object> entry:map.entrySet()){
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
                     // 对空值进行特殊处理，不让其转为 "null"
-                    if (entry.getValue()==null){
+                    if (entry.getValue() == null) {
                         returnList.add("");
-                    }else {
+                    } else {
                         returnList.add(String.valueOf(entry.getValue()));
+// todo 编码特殊转换
+//                        try {
+//                            byte[] s = (String.valueOf(entry.getValue())).getBytes("ISO-8859-1");
+//                            returnList.add(new String((String.valueOf(entry.getValue())).getBytes("ISO-8859-1"), "GBK"));
+//                        } catch (UnsupportedEncodingException e) {
+//                            e.printStackTrace();
+//                        }
                     }
                 }
             }
@@ -119,7 +138,6 @@ public class PoolServiceImpl implements PoolService {
         }
         return returnList;
     }
-
 
 
     @Override

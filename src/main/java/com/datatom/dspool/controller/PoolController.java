@@ -37,7 +37,7 @@ public class PoolController {
     PoolService poolService;
 
 
-    @RequestMapping("/executeSql")
+    @RequestMapping(value = "/executeSql")
     @ResponseBody
     public Object getRequest(@RequestParam("file") MultipartFile file) {
 
@@ -57,6 +57,7 @@ public class PoolController {
             // 转为UTF-8编码
             String sqlString = result.toString(StandardCharsets.UTF_8.name());
             resultMap.put("code", Common.SUCCESS);
+            //todo    考虑编码问题
             resultMap.put("data", poolService.runSqlAsPandasReturn(sqlString));
             resultMap.put("msg", "successful");
             return resultMap;
@@ -69,12 +70,11 @@ public class PoolController {
         }
     }
 
-    @RequestMapping("/oracle/executeSql")
+    @RequestMapping(value = "/oracle/executeSql")
     @ResponseBody
     public Object getRequest(String sql) {
         Map<String, Object> resultMap = new HashMap<>(16);
         try {
-            // 转为UTF-8编码
             resultMap.put("code", Common.SUCCESS);
             resultMap.put("data", poolService.runSqlAsXormReturn(sql));
             resultMap.put("msg", "successful");
@@ -83,7 +83,25 @@ public class PoolController {
             resultMap.put("code", Common.ERROR);
             resultMap.put("msg", "sql 执行异常,\r\n" + e.getMessage());
 
-            logger.error("sql执行异常" , e);
+            logger.error("sql执行异常", e);
+            return resultMap;
+        }
+    }
+
+    @RequestMapping(value = "/hive/executeSql")
+    @ResponseBody
+    public Object executeHiveSql(String sql) {
+        Map<String, Object> resultMap = new HashMap<>(16);
+        try {
+            resultMap.put("code", Common.SUCCESS);
+            resultMap.put("data", poolService.runSqlAsHiveReturn(sql));
+            resultMap.put("msg", "successful");
+            return resultMap;
+        } catch (Exception e) {
+            resultMap.put("code", Common.ERROR);
+            resultMap.put("msg", "sql 执行异常,\r\n" + e.getMessage());
+
+            logger.error("sql执行异常", e);
             return resultMap;
         }
     }
@@ -95,6 +113,7 @@ public class PoolController {
         try {
             // 加载驱动类
             Class.forName(JdbcUtils.getDriverClassName(jdbcUrl));
+            // 设定超时时间未15秒，v4.5.2 需求24修改
             Connection con = DriverManager
                     .getConnection(jdbcUrl, username, password);
             if (con != null) {
