@@ -51,6 +51,8 @@ spring:
         reset-enable: false
         login-username: admin
         login-password: admin
+      validation-query: select 1
+      test-while-idle: true
 
 
 

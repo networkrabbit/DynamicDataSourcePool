@@ -38,6 +38,7 @@ public class DataInterceptor implements HandlerInterceptor {
     private static Logger logger = LoggerFactory.getLogger(DataInterceptor.class);
 
     private static final String TRUE = "true";
+    private static final String ORACLE_JDBC_DRIVER_CLASS_NAME = "oracle.jdbc.OracleDriver";
     @Value("${rsa.public-key}")
     private static String rsaPublicKey;
     @Value("${rsa.enable}")
@@ -67,7 +68,6 @@ public class DataInterceptor implements HandlerInterceptor {
         }
         // 将字符串拼接转md5加密，通过比较md5值的一致性来判断数据源的一致性
         String key = Md5.md5(jdbcUrl + username + password, 16);
-
         // 判断该数据源是否已在map中存在,当不存在时添加新数据源,否则直接切换
         if (!DynamicDataSource.getInstance().getDataSourceMap().containsKey(key)) {
             try {
@@ -80,7 +80,7 @@ public class DataInterceptor implements HandlerInterceptor {
         }
         // 切换数据源到新增数据源
         DataSourceContextHolder.setKey(key);
-        logger.debug("切换数据源 md5 key:" + key + " jdbcUrl:" + jdbcUrl);
+        logger.info("切换数据源 md5 key:" + key + " jdbcUrl:" + jdbcUrl);
         return true;
     }
 
@@ -95,20 +95,37 @@ public class DataInterceptor implements HandlerInterceptor {
     private static void createDataSource(String url, String username, String password) throws SQLException {
         // 根据配置创建 DruidDataSource 对象
         DruidDataSource dynamicDataSource = new DruidDataSource();
+        String jdbcDriverClassName = JdbcUtils.getDriverClassName(url);
+
         dynamicDataSource.setDriverClassName(JdbcUtils.getDriverClassName(url));
         dynamicDataSource.setUrl(url);
         dynamicDataSource.setUsername(username);
         dynamicDataSource.setPassword(password);
-        // 设置基础配置项，设置最大、最小连接数
+        // 设置基础配置项，设置初始化、最大、最小连接数
+        dynamicDataSource.setInitialSize(1);
         dynamicDataSource.setMaxActive(14);
         dynamicDataSource.setMinIdle(1);
         // 设置sql合并，将一类sql归类
         dynamicDataSource.setFilters("mergeStat");
-        dynamicDataSource.setValidationQuery("select 1");
+        // 设置验证sql，对oracle特殊处理
+        String validationQuerySql = "select 1";
+        if (ORACLE_JDBC_DRIVER_CLASS_NAME.equals(jdbcDriverClassName)) {
+            validationQuerySql = "SELECT 1 FROM DUAL";
+        }
+        dynamicDataSource.setValidationQuery(validationQuerySql);
         dynamicDataSource.setTestWhileIdle(true);
+
         // 配置一个连接在池中最小生存时间，单位毫秒
         dynamicDataSource.setMinEvictableIdleTimeMillis(10 * 60 * 1000);
         dynamicDataSource.setMaxEvictableIdleTimeMillis(15 * 60 * 1000);
+
+        // 取消自动重连，并配置最大等待时间
+        // todo 重试机制需要确认
+//        dynamicDataSource.setBreakAfterAcquireFailure(true);
+//        dynamicDataSource.setConnectionErrorRetryAttempts(3);
+
+        // 配置重试间隔时间
+        // dynamicDataSource.setTimeBetweenConnectErrorMillis();
         // 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
         dynamicDataSource.setTimeBetweenEvictionRunsMillis(200);
 //        dynamicDataSource.setTimeout
@@ -117,7 +134,6 @@ public class DataInterceptor implements HandlerInterceptor {
         Map<Object, Object> dataSourceMap = DynamicDataSource.getInstance().getDataSourceMap();
         dataSourceMap.put(thisKey, dynamicDataSource);
         DynamicDataSource.getInstance().setTargetDataSources(dataSourceMap);
-
 
     }
 
@@ -131,6 +147,7 @@ public class DataInterceptor implements HandlerInterceptor {
     private static void sendJson(HttpServletResponse response, int code, String msg) {
         PrintWriter out;
         try {
+            response.setContentType("application/json;charset=utf-8");
             out = response.getWriter();
             Map<String, Object> map = new HashMap<>(16);
             map.put("code", code);

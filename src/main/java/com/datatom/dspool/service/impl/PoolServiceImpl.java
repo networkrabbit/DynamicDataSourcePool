@@ -95,7 +95,6 @@ public class PoolServiceImpl implements PoolService {
     @Override
 //    @Transactional(rollbackFor = RuntimeException.class)
     public List<Map<String, Object>> runSqlAsHiveReturn(String sqlString) {
-//        System.out.println(poolMapper.updateStr(sqlString));
         return poolMapper.updateStr(sqlString);
     }
 

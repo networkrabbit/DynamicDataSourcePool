@@ -1,10 +1,15 @@
 package com.datatom.dspool.controller;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.stat.DruidStatManagerFacade;
 import com.alibaba.druid.support.console.DruidStat;
 import com.alibaba.druid.util.JdbcUtils;
+import com.datatom.dspool.datasource.DataSourceContextHolder;
+import com.datatom.dspool.datasource.DynamicDataSource;
 import com.datatom.dspool.service.PoolService;
 import com.datatom.dspool.utils.Common;
+import com.datatom.dspool.utils.Md5;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -90,7 +96,7 @@ public class PoolController {
 
     @RequestMapping(value = "/hive/executeSql")
     @ResponseBody
-    public Object executeHiveSql(String sql) {
+    public Object executeHiveSql(HttpServletRequest request,String sql) {
         Map<String, Object> resultMap = new HashMap<>(16);
         try {
             resultMap.put("code", Common.SUCCESS);
@@ -98,9 +104,19 @@ public class PoolController {
             resultMap.put("msg", "successful");
             return resultMap;
         } catch (Exception e) {
+            if(e.getMessage().contains("CannotGetJdbcConnectionException")){
+                String jdbcUrl = request.getParameter("jdbcUrl");
+                String username = request.getParameter("username");
+                String password = request.getParameter("password");
+                String md5 = Md5.md5(jdbcUrl + username + password, 16);
+                Map<Object, Object> dataSourceMap = DynamicDataSource.getInstance().getDataSourceMap();
+                dataSourceMap.remove(md5);
+                DynamicDataSource.getInstance().setTargetDataSources(dataSourceMap);
+            }
+
+            // todo 考虑数据源异常时是否需要去除无效的数据源
             resultMap.put("code", Common.ERROR);
             resultMap.put("msg", "sql 执行异常,\r\n" + e.getMessage());
-
             logger.error("sql执行异常", e);
             return resultMap;
         }
